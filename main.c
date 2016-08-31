@@ -145,7 +145,7 @@ void ctrlprocess(void)
 		return;
 	}
 	else    //寻卡ok  天线区有卡
-		{flag=1;} 	 
+	{flag=1;} 	 
 
 	status = PcdAnticoll(&RevBuffer[2]);//防冲撞，返回卡的序列号 4字节
 							/*
@@ -167,7 +167,7 @@ void ctrlprocess(void)
 	}
 	else
 	{
-	//	sendString(MLastSelectedSnr);
+	//	sendString(MLastSelectedSnr); //把读到的卡号发送到串口
 		for(i=0;i<13;i++)
 		{
 		  	for(j=0;j<4;j++)
@@ -284,7 +284,7 @@ bit sdl=1;
 
 void main(void)		 //主函数
 {
-//	initCom();
+//	initCom();	  //初始串口
  	InitAll();//初始化模块
 	while(1)
 	{	
