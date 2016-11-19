@@ -1,0 +1,5 @@
+"lcd1602.obj",
+"main.obj",
+"rc522.obj" 
+TO "TEST" 
+RAMSIZE(256) 
