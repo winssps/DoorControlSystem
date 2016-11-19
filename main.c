@@ -20,6 +20,7 @@ char code IDs[][4]=	//四个字节的序列号
 	{0x1d,0xb1,0x65,0xfb},
 	{0xa4,0xab,0xd1,0x5f},
 	{0x90,0x4e,0xbe,0x65},
+<<<<<<< HEAD
 	{0x34,0x27,0x8d,0x45},
 	{0x2B,0x2F,0x82,0x33},
 	{0x99,0xAA,0x95,0xBF},
@@ -34,6 +35,9 @@ char code IDs[][4]=	//四个字节的序列号
 	{0xA1,0xC3,0xCE,0xB0},
 	{0x77,0x19,0x2B,0x7B},
 	{0x6D,0x23,0x72,0xFB}
+=======
+	{0x34,0x27,0x8d,0x45}
+>>>>>>> d6b5c120b5be6432f5ce0808663103f7267ee07d
 };
 
 				
@@ -77,9 +81,15 @@ void initCom(void)//初始化串口
 {
 	TMOD |= 0x20;
 	TH1 = 0xf3;
+<<<<<<< HEAD
 	TL1 = 0Xf3;	  //4800
 	SCON |= 0x50;
 	PCON |= 0X80;
+=======
+	TL1 = 0Xf3;	  //2400
+	SCON |= 0x50;
+//	PCON |= 0X80;
+>>>>>>> d6b5c120b5be6432f5ce0808663103f7267ee07d
 	TR1 = 1;
 
 	ES = 1;
@@ -181,7 +191,11 @@ void ctrlprocess(void)
 	else
 	{
 	//	sendString(MLastSelectedSnr); //把读到的卡号发送到串口
+<<<<<<< HEAD
 		for(i=0;i<26;i++)
+=======
+		for(i=0;i<13;i++)
+>>>>>>> d6b5c120b5be6432f5ce0808663103f7267ee07d
 		{
 		  	for(j=0;j<4;j++)
 			{
@@ -297,9 +311,14 @@ bit sdl=1;
 
 void main(void)		 //主函数
 {
+<<<<<<< HEAD
 	initCom();	  //初始串口
  	InitAll();//初始化模块
 	  	sendBit('a');
+=======
+//	initCom();	  //初始串口
+ 	InitAll();//初始化模块
+>>>>>>> d6b5c120b5be6432f5ce0808663103f7267ee07d
 	while(1)
 	{	
 				 	 

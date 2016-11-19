@@ -7,6 +7,7 @@ F:\蓝桥杯及电赛院选\RC522\51读写卡程序\TEST.uvproj
 Project File Date:  03/25/2016
 
 <h2>Output:</h2>
+<<<<<<< HEAD
 Build target 'Target 1'
 compiling lcd1602.c...
 compiling main.c...
@@ -163,3 +164,5 @@ linking...
 Program Size: data=144.3 xdata=8 code=2870
 creating hex file from "TEST"...
 "TEST" - 0 Error(s), 4 Warning(s).
+=======
+>>>>>>> d6b5c120b5be6432f5ce0808663103f7267ee07d

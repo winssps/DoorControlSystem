@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 C51 COMPILER V9.00   MAIN                                                                  09/06/2016 13:22:04 PAGE 1   
+=======
+C51 COMPILER V9.00   MAIN                                                                  04/23/2016 14:41:31 PAGE 1   
+>>>>>>> d6b5c120b5be6432f5ce0808663103f7267ee07d
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE MAIN
@@ -29,6 +33,7 @@ line level    source
   20                  {0x1d,0xb1,0x65,0xfb},
   21                  {0xa4,0xab,0xd1,0x5f},
   22                  {0x90,0x4e,0xbe,0x65},
+<<<<<<< HEAD
   23                  {0x34,0x27,0x8d,0x45},
   24                  {0x2B,0x2F,0x82,0x33},
   25                  {0x99,0xAA,0x95,0xBF},
@@ -341,6 +346,306 @@ line level    source
 MODULE INFORMATION:   STATIC OVERLAYABLE
    CODE SIZE        =    604    ----
    CONSTANT SIZE    =    151    ----
+=======
+  23                  {0x34,0x27,0x8d,0x45}
+  24          };
+  25          
+  26                                          
+  27          uchar idata Read_Data[16] = {0x00};
+  28          uchar idata PassWd[6] = {0x00};
+  29          uchar idata WriteData[16];
+  30          uchar idata RevBuffer[30];
+  31          uchar data MLastSelectedSnr[4];
+  32          
+  33          uchar code tab[] = "0123456789ABCDEF";
+  34          uchar code welc[] = "Welcome";
+  35          uchar code kahao[] = "Card: "; 
+  36          uchar xdata show[8];                             //空数组，要显示的8位
+  37          
+  38          uchar code descardnum[] = "Cards Number: ";
+  39          
+  40          uint KuaiN;
+  41          uchar oprationcard;
+  42          
+  43          bit flag = 0;                         //有卡标志
+  44          uchar j = 0;
+  45          uchar card_num = 0;                   //有效卡片数量
+  46          
+  47          /////////////////////////////////////////////////////////////////////
+  48          //延时函数
+  49          /////////////////////////////////////////////////////////////////////
+  50          void delay_ms(uint data tms)
+  51          {
+  52   1              uint ii;
+  53   1              while(tms)
+  54   1              {
+  55   2                      tms--;
+C51 COMPILER V9.00   MAIN                                                                  04/23/2016 14:41:31 PAGE 2   
+
+  56   2                      for(ii = 0; ii < 400; ii++)
+  57   2                      {
+  58   3                              nop(); nop(); nop(); nop(); nop(); nop();
+  59   3                      }
+  60   2              }
+  61   1      }
+  62          
+  63          void initCom(void)//初始化串口
+  64          {
+  65   1              TMOD |= 0x20;
+  66   1              TH1 = 0xf3;
+  67   1              TL1 = 0Xf3;       //2400
+  68   1              SCON |= 0x50;
+  69   1      //      PCON |= 0X80;
+  70   1              TR1 = 1;
+  71   1      
+  72   1              ES = 1;
+  73   1              EA = 1;
+  74   1      }
+  75          
+  76          void sendBit(char dat)//发送一个字节数据
+  77          {
+  78   1              ACC = dat;
+  79   1              SBUF = ACC;
+  80   1              while(!TI);
+  81   1                      TI = 0;
+  82   1      }
+  83          
+  84          void sendString(char* p)//发送字符串
+  85          {
+  86   1              while(*p)
+  87   1              {
+  88   2                      sendBit(*p++);
+  89   2              }
+  90   1      }
+  91          
+  92          
+  93          
+  94          
+  95          /////////////////////////////////////////////////////////////////////
+  96          //验证通过提示函数
+  97          /////////////////////////////////////////////////////////////////////
+  98          void Pass(void)
+  99          {
+ 100   1              SET_BEEP;
+ 101   1              delay_ms(15);
+ 102   1              CLR_BEEP;
+ 103   1      }
+ 104          
+ 105          /////////////////////////////////////////////////////////////////////
+ 106          //初始化RC522模块
+ 107          /////////////////////////////////////////////////////////////////////
+ 108          void InitRc522(void)
+ 109          {
+ 110   1      //      key_add = 1;   //电源引脚
+ 111   1              key_down = 1;
+ 112   1              PcdReset();      //复位
+ 113   1              PcdAntennaOff(); //关闭天线 
+ 114   1              PcdAntennaOn();  //开启天线 
+ 115   1              M500PcdConfigISOType( 'A' ); //设置RC632的工作方式  //ISO14443_A
+ 116   1      }
+ 117          
+C51 COMPILER V9.00   MAIN                                                                  04/23/2016 14:41:31 PAGE 3   
+
+ 118          /////////////////////////////////////////////////////////////////////
+ 119          //初始化所有模块
+ 120          /////////////////////////////////////////////////////////////////////
+ 121          void InitAll(void)
+ 122          {
+ 123   1              InitRc522();   //初始化读卡器
+ 124   1      //      init_lcd1602();   //初始化1602
+ 125   1              
+ 126   1              KuaiN = 0;                 //
+ 127   1              oprationcard = 0;
+ 128   1              
+ 129   1              Pass();          //验证通过提示函数
+ 130   1      }
+ 131          
+ 132          /////////////////////////////////////////////////////////////////////
+ 133          //寻卡，防冲撞，读取卡序列号
+ 134          /////////////////////////////////////////////////////////////////////
+ 135          void ctrlprocess(void)
+ 136          {
+ 137   1              char data status;
+ 138   1              int i=0,j=0,okNumber=0;
+ 139   1              bit stopBuff=1;
+ 140   1              PcdReset();        
+ 141   1              status = PcdRequest(PICC_REQIDL, &RevBuffer[0]);//寻天线区内未进入休眠状态的卡，返回卡片类型 2字节
+ 142   1              if(status != MI_OK)//成功返回MI_OK       error
+ 143   1              {
+ 144   2                      flag = 0;
+ 145   2                      return;
+ 146   2              }
+ 147   1              else    //寻卡ok  天线区有卡
+ 148   1                      {flag=1;}        
+ 149   1      
+ 150   1              status = PcdAnticoll(&RevBuffer[2]);//防冲撞，返回卡的序列号 4字节
+ 151   1                                                              /*
+ 152   1                                                                      RevBuffer[2]
+ 153   1                                                                      RevBuffer[3]
+ 154   1                                                                      RevBuffer[4]
+ 155   1                                                                      RevBuffer[5]
+ 156   1                                                              */
+ 157   1              if(status != MI_OK)
+ 158   1              {
+ 159   2                      return;
+ 160   2              }
+ 161   1      
+ 162   1                      memcpy(MLastSelectedSnr, &RevBuffer[2], 4);//cpy读到的卡号 
+ 163   1                      status = PcdSelect(MLastSelectedSnr);//选卡  成功返回 0
+ 164   1              if(status != MI_OK)
+ 165   1              {
+ 166   2                      return;
+ 167   2              }
+ 168   1              else
+ 169   1              {
+ 170   2              //      sendString(MLastSelectedSnr);
+ 171   2                      for(i=0;i<13;i++)
+ 172   2                      {
+ 173   3                              for(j=0;j<4;j++)
+ 174   3                              {
+ 175   4                                      if(MLastSelectedSnr[j] == IDs[i][j])okNumber++;
+ 176   4                              }       
+ 177   3                              if(okNumber == 4)//ok
+ 178   3                                      {okNumber = 0;dept=0;delay_ms(200);break;}
+ 179   3                              else    //error
+C51 COMPILER V9.00   MAIN                                                                  04/23/2016 14:41:31 PAGE 4   
+
+ 180   3                                 okNumber = 0;
+ 181   3                      }  
+ 182   2              }
+ 183   1      
+ 184   1              if(oprationcard == READCARD)//读卡         0xA1
+ 185   1              {
+ 186   2                      oprationcard = 0;//操作卡
+ 187   2                      status = PcdAuthState(PICC_AUTHENT1A, KuaiN, PassWd, MLastSelectedSnr);//验证卡片密码
+ 188   2                      if(status != MI_OK)//成功返回 0
+ 189   2                              return;
+ 190   2                      status = PcdRead(KuaiN, Read_Data);//读取M1卡一块数据 KuaiN =0;
+ 191   2                      if(status != MI_OK)//成功返回 0
+ 192   2                              return;
+ 193   2                      
+ 194   2                      PcdHalt();//命令卡片进入休眠状态 成功返回0      
+ 195   2              }                                       
+ 196   1      }
+ 197          
+ 198          void convert(uchar *num_ID)      //显示卡号
+ 199          {
+ 200   1              for(j = 0; j < 4; j++)
+ 201   1              {
+ 202   2                      show[2*j] = (num_ID[j] & 0xf0) >> 4; 
+ 203   2                      show[2*j+1] = num_ID[j] & 0x0f;
+ 204   2              }                
+ 205   1      }       
+ 206            /*
+ 207          void disnum(void)
+ 208          {
+ 209                  uchar equal = 0;
+ 210                  uchar i = 0;
+ 211          
+ 212                  write_cmd(0x01);
+ 213                  write_cmd(0x84);
+ 214          
+ 215                  for(j = 0; welc[j] != '\0'; j++)
+ 216                  {
+ 217                          write_data(welc[j]);    
+ 218                  }
+ 219          
+ 220                  write_cmd(0xc0);
+ 221                  for(j=0; kahao[j]!='\0'; j++)
+ 222                  {
+ 223                          write_data(kahao[j]);   
+ 224                  }
+ 225          
+ 226                  
+ 227                  for(i=0; i<= NUM; i++)
+ 228                  {
+ 229                          equal = 0;
+ 230          
+ 231                          for(j = 0; j <= 7; j++)
+ 232                          {
+ 233                                  if (tab[show[j]] != ID[i][j])
+ 234                                  {
+ 235                                          equal = 1;
+ 236                                          break;
+ 237                                  }
+ 238                          }
+ 239          
+ 240                          if (equal == 0)
+ 241                          {
+C51 COMPILER V9.00   MAIN                                                                  04/23/2016 14:41:31 PAGE 5   
+
+ 242                                  beep = 0;
+ 243                                  break;
+ 244                          }
+ 245                          else
+ 246                                  beep = 1;
+ 247                  }  
+ 248          
+ 249                  if (equal == 0)    
+ 250                  {
+ 251                          for(j=0; j<=7; j++)
+ 252                          {
+ 253                                  write_data(tab[show[j]]);
+ 254                                  show[j] = 0;
+ 255                          } 
+ 256                  } 
+ 257          } */
+ 258          
+ 259          void initdesp(void)
+ 260          {
+ 261   1              write_cmd(0x01);
+ 262   1              write_cmd(0x84);
+ 263   1      
+ 264   1              for(j = 0; welc[j] != '\0'; j++)
+ 265   1              {
+ 266   2                      write_data(welc[j]);    
+ 267   2              }
+ 268   1      
+ 269   1              write_cmd(0xc0);
+ 270   1              
+ 271   1              for(j=0; descardnum[j]!='\0'; j++)
+ 272   1              {
+ 273   2                      write_data(descardnum[j]);      
+ 274   2              }
+ 275   1      
+ 276   1              write_data(tab[card_num/10]);
+ 277   1              write_data(tab[card_num%10]);              
+ 278   1      }
+ 279          
+ 280          
+ 281          
+ 282          
+ 283          bit sdl=1;
+ 284          
+ 285          void main(void)          //主函数
+ 286          {
+ 287   1      //      initCom();
+ 288   1              InitAll();//初始化模块
+ 289   1              while(1)
+ 290   1              {       
+ 291   2                                               
+ 292   2                      if(flag == 1)//失败     
+ 293   2                      {
+ 294   3                              while(flag)
+ 295   3                                ctrlprocess();
+ 296   3                      }        
+ 297   2                                                      
+ 298   2                      else//ok        
+ 299   2                      {
+ 300   3                              dept = 1;
+ 301   3                              while(!flag)
+ 302   3                                      ctrlprocess();
+ 303   3                      }        
+C51 COMPILER V9.00   MAIN                                                                  04/23/2016 14:41:31 PAGE 6   
+
+ 304   2              }  
+ 305   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    593    ----
+   CONSTANT SIZE    =     99    ----
+>>>>>>> d6b5c120b5be6432f5ce0808663103f7267ee07d
    XDATA SIZE       =      8    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =      9      12
